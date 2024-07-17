@@ -1,0 +1,47 @@
+》》Write a Python program that does the following:
+
+At the beginning of your program, specify the format for reading files (default is . py). Read all relevant files from the "code" folder in the current directory using utf-8 encoding and including any subdirectories containing such files.
+
+Import the "api" package; pass each file read into a string to be processed by the api.note() function sequentially. Extract characters between "`````" (including "````) from the returned string, remove the first line of this extracted content and write it back in utf-8 encoding overwriting existing contents in corresponding files.
+
+》
+```python
+import os
+import re
+from api import note
+
+def read_files(directory, file_extension='.py'):
+    file_paths = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(file_extension):
+                file_paths.append(os.path.join(root, file))
+    return file_paths
+
+def process_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    processed_content = note(content)
+    match = re.search(r'```(.*?)```', processed_content, re.DOTALL)
+    if match:
+        extracted_content = match.group(1).strip().split('\n', 1)[1]
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(extracted_content)
+
+def main():
+    directory = 'code'
+    file_extension = '.py'
+    file_paths = read_files(directory, file_extension)
+    for file_path in file_paths:
+        process_file(file_path)
+
+if __name__ == "__main__":
+    main()
+```
+
+This program implements the following functions:
+
+1. At the beginning of the program, fill in the file format to be read from a text box (default is `.py`). Use UTF-8 encoding to read all files with the specified format from the "code" folder within the current directory and its subdirectories.
+
+2. Import the 'api' package, pass each string obtained by reading into step 1 as an argument for the function api.note(). Retrieve a substring between two pairs of ```` ``` in the return value of this function call (excluding the first line), remove these matched characters from it using `utf-8` encoding and write them to corresponding files within their respective directories, replacing any existing content.
+

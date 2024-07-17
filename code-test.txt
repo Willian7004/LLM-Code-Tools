@@ -1,0 +1,82 @@
+》》Write a Python program that does the following:
+1. In the command line, enter content. If you leave the input blank, read the contents of a question.txt file in UTF-8 encoding from the current directory and save it to the "text" string. If both your input and the contents of question.txt are empty, output "Input is empty" and end the program.
+2. Import the 'api' package; pass the content entered or read into api.code() function
+3. Strip off the first line from the returned code in a string by matching characters between two ``` in the api. code()'s return value using UTF-8 encoding, save this part to "code" and write it as code.py (if there is no existing file called `code.py` then create one; if already exists, replace its content)
+4. Run 'code.py' from current directory: If successful, capture the output into a string named result', and pass text, code, and result to api.code_check() function in this order (api.code_check(text, code, result)). Otherwise save error message of "code.py" execution failure as `result` then call api.code_error(code, result) passing arguments by same sequence
+5. Strip off the first line from ```...``` part found again and replace current content with it on 'code.py' (if does not exist create one; if exists overwrite its content). If no match is found output the returned value of last step.
+6. Repeat steps 4 & 5 for five times: After fifth execution, check whether code.py executed without error - print "Cannot be certain that program matches expected behavior." and end otherwise display message as per return from api.code_error() function (if it was called) or output contents in 'code.py' if no errors occurred. If the last operation resulted into an exception then terminate with a prompt saying: "Program cannot execute correctly"
+
+》
+```python
+import os
+import subprocess
+import re
+
+def read_input():
+    user_input = input("Please enter your content: ")
+    if not user_input:
+        try:
+            with open("question.txt", "r", encoding="utf-8") as file:
+                user_input = file.read().strip()
+        except FileNotFoundError:
+            user_input = ""
+    return user_input
+
+def extract_code(response):
+    match = re.search(r"```(.*?)```", response, re.DOTALL)
+    if match:
+        code_lines = match.group(1).strip().split('\n')[1:]
+        return '\n'.join(code_lines)
+    return None
+
+def run_code(code_path):
+    try:
+        result = subprocess.check_output(["python", code_path], universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        result = str(e)
+    return result
+
+def save_code(code):
+    with open("code.py", "w", encoding="utf-8") as file:
+        file.write(code)
+
+def main():
+    text = read_input()
+    if not text:
+        print("The input is empty")
+        return
+
+    import api
+    response = api.code(text)
+    code = extract_code(response)
+    if not code:
+        print("The code content was not matched")
+        return
+
+    save_code(code)
+    result = run_code("code.py")
+
+    for i in range(5):
+        if "Error" in result:
+            response = api.code_error(code, result)
+        else:
+            response = api.code_check(text, code, result)
+
+        new_code = extract_code(response)
+        if not new_code:
+            print(response)
+            return
+
+        save_code(new_code)
+        result = run_code("code.py")
+
+    if "Error" in result:
+        print("The program does not work properly")
+    else:
+        print("Not sure if the program is as expected")
+
+if __name__ == "__main__":
+    main()
+```
+
+This app implements the features you described. Make sure that the 'api' package is installed correctly and that the 'code', 'code_check', and 'code_error' functions are included in the package before running this program.

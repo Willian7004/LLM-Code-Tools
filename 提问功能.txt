@@ -1,0 +1,61 @@
+》》写一个python程序，实现以下功能：
+
+1.使用utf-8编码读取当前目录下的code文件夹中所有txt文件，包含子文件夹中的所有txt文件。
+
+2.把上一步读取到的文件的文件路径和文件内容依次连接到"content"字符串，但文件路径中的文件名需要替换为在相同路径查找到的文件名相同但格式不同的文件的文件名（例如被读取的目录有与被读取的txt文件同名的.py文件，则传入. py文件的文件名和txt文件的内容）。
+
+3.在命令行输入内容到“question”字符串，导入“api”包，把"content"字符串和question”字符串传入api.question()函数（传入顺序为api.question(content,question)）。
+
+》
+```python
+import os
+import glob
+
+def find_files_with_same_name_but_different_extension(directory, filename):
+    base_name, _ = os.path.splitext(filename)
+    pattern = os.path.join(directory, f"{base_name}.*")
+    files = glob.glob(pattern)
+    return [os.path.basename(f) for f in files if f != filename]
+
+def read_all_txt_files(directory):
+    content = ""
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".txt"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_content = f.read()
+                
+                # Find files with the same name but different extension
+                other_files = find_files_with_same_name_but_different_extension(root, file)
+                if other_files:
+                    file_name_to_use = other_files[0]
+                else:
+                    file_name_to_use = file
+                
+                content += f"{os.path.join(root, file_name_to_use)}\n{file_content}\n"
+    return content
+
+def main():
+    directory = "code"
+    content = read_all_txt_files(directory)
+    
+    question = input("Please enter your question: ")
+    
+    import api
+    api.question(content, question)
+
+if __name__ == "__main__":
+    main()
+```
+
+请确保在运行此脚本之前，`api` 包已经安装并且包含 `question` 函数。如果 `api` 包不存在，你需要创建一个模拟的 `api` 模块来测试这个脚本。例如：
+
+```python
+# api.py
+def question(content, question):
+    print(f"Content: {content}")
+    print(f"Question: {question}")
+```
+
+将这个文件保存为 `api.py`，并确保它与你的主脚本在同一目录下。

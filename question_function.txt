@@ -1,0 +1,61 @@
+¡·¡·Write a Python program that does the following:
+
+1. Read all .txt files in the 'code' folder and its subfolders using utf-8 encoding.
+
+2. Append each file's path (with replaced filename for format differences like .py instead of .txt if exists) to a "content" string along with content from that file.
+   
+3. Input your question into the "question" string via command line, import the 'api' package and pass both strings as parameters in order - api.question(content, question).
+
+¡·
+```python
+import os
+import glob
+
+def find_files_with_same_name_but_different_extension(directory, filename):
+    base_name, _ = os.path.splitext(filename)
+    pattern = os.path.join(directory, f"{base_name}.*")
+    files = glob.glob(pattern)
+    return [os.path.basename(f) for f in files if f != filename]
+
+def read_all_txt_files(directory):
+    content = ""
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".txt"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_content = f.read()
+                
+                # Find files with the same name but different extension
+                other_files = find_files_with_same_name_but_different_extension(root, file)
+                if other_files:
+                    file_name_to_use = other_files[0]
+                else:
+                    file_name_to_use = file
+                
+                content += f"{os.path.join(root, file_name_to_use)}\n{file_content}\n"
+    return content
+
+def main():
+    directory = "code"
+    content = read_all_txt_files(directory)
+    
+    question = input("Please enter your question: ")
+    
+    import api
+    api.question(content, question)
+
+if __name__ == "__main__":
+    main()
+```
+
+Please ensure that the 'api' package has been installed and contains a function called question before running this script. If the 'api' module does not exist, you will need to create a simulated version of it for testing purposes. For example:
+
+```python
+# api.py
+def question(content, question):
+    print(f"Content: {content}")
+    print(f"Question: {question}")
+```
+
+Save this file as `api.py`, and ensure that it is in the same directory as your main script.

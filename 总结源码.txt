@@ -1,0 +1,62 @@
+》》写一个python程序，实现以下功能：
+
+1.使用utf-8编码读取当前目录下的code文件夹中所有txt文件，包含子文件夹中的所有txt文件。
+
+2.导入“api”包，把上一步读取到的文件的文件路径和文件内容依次连接到字符串，但文件路径中的文件名需要替换为在相同路径查找到的文件名相同但格式不同的文件的文件名（例如被读取的目录有与被读取的txt文件同名的.py文件，则传入. py文件的文件名和txt文件的内容）。连接完所有txt文件后把字符串传入api. summarize()函数。
+
+
+3.把api. summarize()函数返回的字符串用utf-8编码保存到当前目录的summarize. txt文件。
+
+》
+```python
+import os
+import glob
+import api
+
+def find_matching_file(path, extensions):
+    dir_name = os.path.dirname(path)
+    base_name = os.path.basename(path)
+    name_without_ext = os.path.splitext(base_name)[0]
+    
+    for ext in extensions:
+        matching_file = os.path.join(dir_name, f"{name_without_ext}{ext}")
+        if os.path.exists(matching_file):
+            return matching_file
+    return path
+
+def read_files_in_directory(directory):
+    txt_files = glob.glob(os.path.join(directory, '**', '*.txt'), recursive=True)
+    content = ""
+    for txt_file in txt_files:
+        with open(txt_file, 'r', encoding='utf-8') as file:
+            file_content = file.read()
+        
+        matching_file = find_matching_file(txt_file, ['.py', '.md', '.csv'])
+        content += f"{matching_file}\n{file_content}\n"
+    
+    return content
+
+def main():
+    directory = 'code'
+    content = read_files_in_directory(directory)
+    
+    # Assummarizeing api.summarize() is a function that takes a string and returns a string
+    import api
+    result = api.summarize(content)
+    
+    with open('summarize.txt', 'w', encoding='utf-8') as file:
+        file.write(result)
+
+if __name__ == "__main__":
+    main()
+```
+
+解释：
+
+1. **find_matching_file**: 该函数接受一个文件路径和一个扩展名列表。它尝试在同一目录中找到具有相同名称但不同扩展名的文件。如果找到，则返回匹配文件的路径；否则，返回原始路径。
+2. **read_files_in_directory**: 该函数读取指定目录（包括子目录）中的所有 `.txt` 文件，并构建一个字符串，其中每个条目是具有不同扩展名的匹配文件路径（如果有的话）后跟 `.txt` 文件的内容。
+3. **main**: 此函数协调整个过程。它读取文件、调用 `api.summarize()` 函数与拼接的字符串，并将结果写入 `summarize.txt`。
+
+假设：
+- `api` 模块有一个名为 `summarize` 的功能，该功能接受一个字符串并返回一个字符串。
+- `api` 模块在运行此脚本的 Python 环境中可用。

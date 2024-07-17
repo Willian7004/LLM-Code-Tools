@@ -1,0 +1,79 @@
+》》写一个python程序，实现以下功能：
+1.在命令行输入内容。如果输入的内容为空，用utf-8编码读取当前目录的question.txt文件的内容作为输入，把输入的内容保存到“text”字符串。如果输入的内容为和question.txt的内容均为空，输出“输入内容为空”并结束程序
+2.导入“api”包，用utf-8编码读取当前目录的code.py，把code.py的内容保存到“code”字符串，把“text”字符串和“code”字符串的内容输入到api.modify()函数（传入顺序为api.modify(question,code)）
+3.在api. modify()函数返回的字符串中匹配从“```”到下一个“```”之间的字符再去掉匹配到的字符的第一行，用utf-8编码把这部分字符保存到“code”字符串并写入当前目录中的code. py（如果当前目录没有code. py则创建code. py，如果当前目录已有code. py则覆盖code. py中的内容）
+4.运行当前目录中的code. py，如果code. py正常运行，把code. py输出的内容保存到“result”字符串并把上述三个字符串传入api. modify_check()函数（传入顺序为api. modify_check(text, code, result)）。如果code. py报错，把报错内容保存到“result”字符串并把“code”字符串和“result”字符串传入api. code_error()函数（传入顺序为api. code_error(code, result)）。
+5.在第4步运行的函数的返回的内容中匹配从“```”到下一个“```”之间的字符再去掉匹配到的字符的第一行，用utf-8编码把这部分字符保存到“code”字符串并写入当前目录中的code. py（如果当前目录没有code. py则创建code. py，如果当前目录已有code. py则覆盖code. py中的内容）。如果没有匹配到内容，则输出第4步运行的函数的返回的内容并结束程序。
+6.重复执行第4步和第5步，如果执行次数达到5次且最后一次运行code.py没有报错，则输出“不确定程序是否符合预期”并结束程序；如果执行次数达到5次且最后一次运行code.py报错，则输出“程序不能正常运行”并结束程序
+
+》
+```python
+import os
+import subprocess
+import re
+
+def read_file(filename):
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        return ""
+
+def write_file(filename, content):
+    with open(filename, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+def extract_code_from_markdown(text):
+    match = re.search(r'```(.*?)\n(.*?)```', text, re.DOTALL)
+    if match:
+        return match.group(2).strip()
+    return ""
+
+def run_code(filename):
+    try:
+        result = subprocess.run(['python', filename], capture_output=True, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        return e.stderr.strip()
+
+def main():
+    text = input("请输入内容: ").strip()
+    if not text:
+        text = read_file('question.txt')
+        if not text:
+            print("输入内容为空")
+            return
+
+    code = read_file('code.py')
+    from api import modify, modify_check, code_error
+
+    response = modify(text, code)
+    new_code = extract_code_from_markdown(response)
+    if new_code:
+        write_file('code.py', new_code)
+    else:
+        print(response)
+        return
+
+    for i in range(5):
+        result = run_code('code.py')
+        if "Error" in result or "Traceback" in result:
+            response = code_error(code, result)
+        else:
+            response = modify_check(text, code, result)
+
+        new_code = extract_code_from_markdown(response)
+        if new_code:
+            write_file('code.py', new_code)
+        else:
+            print(response)
+            return
+
+    if "Error" in result or "Traceback" in result:
+        print("程序不能正常运行")
+    else:
+        print("不确定程序是否符合预期")
+
+if __name__ == "__main__":
+    main()
+```

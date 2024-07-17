@@ -1,0 +1,43 @@
+》》Write a Python program that does the following:
+
+1.At the beginning of your program, specify the file format you need to read from in a comment at the top or as an initial input prompt for user convenience. By default, it reads files with .py extensions.
+
+2.Import the "api" package and pass each string representing a file into the api.describe() function one by one. In the directory where your program is located (the current working directory), create .txt files that are named exactly like the read-in Python script but without its extension (.py). Write to these new .txt files, using UTF-8 encoding for compatibility with non-English characters if needed.
+
+》
+```python
+import os
+import fnmatch
+from api import describe
+
+def find_files(directory, pattern):
+    for root, dirs, files in os.walk(directory):
+        for basename in files:
+            if fnmatch.fnmatch(basename, pattern):
+                filename = os.path.join(root, basename)
+                yield filename
+
+def main():
+    file_format = '*.py'  # 默认读取.py格式
+    source_directory = 'code'  # 读取当前目录下的code文件夹
+
+    for filepath in find_files(source_directory, file_format):
+        with open(filepath, 'r', encoding='utf-8') as file:
+            file_content = file.read()
+        
+        description = describe(file_content)
+        
+        txt_filepath = os.path.splitext(filepath)[0] + '.txt'
+        with open(txt_filepath, 'w', encoding='utf-8') as txt_file:
+            txt_file.write(description)
+
+if __name__ == "__main__":
+    main()
+```
+
+This app implements the following features:
+
+1. Fill in the file format to be read at the beginning of the program, the default is '.py' format. Use 'utf-8' encoding to read all files in the 'code' folder in the current directory, including files in subfolders.
+
+2. Import the 'api' package, pass the files read in the previous step into the 'api.describe()' function in the form of strings, create a 'txt' file with the same name as the currently read file in the file directory to be read, and write the string returned by the 'api.describe()' function into the 'txt' file with 'utf-8' encoding.
+

@@ -1,0 +1,43 @@
+》》写一个python程序，实现以下功能：
+
+1.在程序开头填写需要读取的文件格式，默认读取. py格式。使用utf-8编码读取当前目录下的code文件夹中所有相应格式的文件，包含子文件夹中相应格式的文件。
+
+2.导入“api”包，把上一步读取到的文件以字符串形式依次传入api. describe()函数，在被读取的文件目录创建与当前读取的文件同名的txt文件并把api. describe()函数返回的字符串用utf-8编码写入这个txt文件。
+
+》
+```python
+import os
+import fnmatch
+from api import describe
+
+def find_files(directory, pattern):
+    for root, dirs, files in os.walk(directory):
+        for basename in files:
+            if fnmatch.fnmatch(basename, pattern):
+                filename = os.path.join(root, basename)
+                yield filename
+
+def main():
+    file_format = '*.py'  # 默认读取.py格式
+    source_directory = 'code'  # 读取当前目录下的code文件夹
+
+    for filepath in find_files(source_directory, file_format):
+        with open(filepath, 'r', encoding='utf-8') as file:
+            file_content = file.read()
+        
+        description = describe(file_content)
+        
+        txt_filepath = os.path.splitext(filepath)[0] + '.txt'
+        with open(txt_filepath, 'w', encoding='utf-8') as txt_file:
+            txt_file.write(description)
+
+if __name__ == "__main__":
+    main()
+```
+
+这个程序实现了以下功能：
+
+1. 在程序开头填写需要读取的文件格式，默认读取 `.py` 格式。使用 `utf-8` 编码读取当前目录下的 `code` 文件夹中所有相应格式的文件，包含子文件夹中相应格式的文件。
+
+2. 导入 `api` 包，把上一步读取到的文件以字符串形式依次传入 `api.describe()` 函数，在被读取的文件目录创建与当前读取的文件同名的 `txt` 文件并把 `api.describe()` 函数返回的字符串用 `utf-8` 编码写入这个 `txt` 文件。
+
